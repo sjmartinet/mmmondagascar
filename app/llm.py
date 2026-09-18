@@ -22,7 +22,7 @@ import re
 
 import anthropic
 
-from .rag import Norma
+from .rag import Norma, normalizar
 
 MODELO = os.getenv("CLAUDE_MODEL", "claude-opus-5")
 
@@ -89,6 +89,58 @@ SALUDOS = {
     "buenas tardes", "buenas noches", "buen dia", "que haces", "quien sos",
     "necesito ayuda", "me puedes ayudar", "puedes ayudarme", "hola que tal",
 }
+
+# Preguntas sobre el propio asistente. No son casos legales y no deben tratarse
+# como fuera de dominio: preguntar "en que te especializas" es de lo primero que
+# hace cualquiera que abre la herramienta.
+META = (
+    "especializa", "especialidad", "que puedes hacer", "que sabes",
+    "que temas", "de que temas", "en que me puedes ayudar", "que normas",
+    "para que sirves", "que haces", "quien eres", "como funcionas",
+    "que me puedes decir", "cuales son tus temas", "que cubres",
+    "en que ayudas", "que tipo de casos", "sobre que puedes",
+)
+
+
+def es_pregunta_meta(consulta: str) -> bool:
+    texto = " ".join(normalizar(consulta))
+    return any(" ".join(normalizar(m)) in texto for m in META)
+
+
+def respuesta_capacidades(normas: list[Norma]) -> dict:
+    """Lista lo que el asistente cubre, leido del corpus real.
+
+    Se genera desde /corpus en vez de escribirse a mano: si manana se anade o se
+    quita una norma, esta respuesta se mantiene cierta sola.
+    """
+    temas = []
+    for n in normas:
+        t = n.tema.split("(")[0].strip().rstrip(".")
+        if t and t not in temas:
+            temas.append(t)
+
+    return {
+        "fuera_de_dominio": False,
+        "saludo": True,
+        "area_detectada": "derecho laboral",
+        "resumen": (
+            f"Me especializo en DERECHO LABORAL COLOMBIANO, y solo en eso. "
+            f"Tengo cargadas {len(normas)} normas del Codigo Sustantivo del Trabajo "
+            "y leyes relacionadas, y solo puedo responderte citandolas. Si tu caso "
+            "es de otra area te lo digo, en vez de inventarme una respuesta."
+        ),
+        "normas": [],
+        "pasos": temas,
+        "confianza": "alta",
+        "mensaje_hablado": (
+            "Me especializo en derecho laboral colombiano. Puedo ayudarte con "
+            "despidos y liquidaciones, acoso laboral, vacaciones, primas y "
+            "cesantias, horas extras y jornada, embarazo y licencias, accidentes "
+            "de trabajo y contratos. Cuentame tu caso."
+        ),
+        "modo": "deterministico",
+    }
+
 
 BIENVENIDA = {
     "fuera_de_dominio": False,
@@ -250,8 +302,6 @@ def _pedir_a_claude(peticion: str) -> str:
 
 def responder(consulta: str, resultados: list[tuple[Norma, float]]) -> dict:
     """Devuelve la respuesta estructurada. Nunca lanza por fallo de red."""
-
-    from .rag import normalizar
 
     limpio = consulta.strip().lower().strip("!?.,¿¡ ")
     palabras = normalizar(consulta)      # solo terminos con carga semantica

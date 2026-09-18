@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import db
-from .llm import responder
+from .llm import es_pregunta_meta, responder, respuesta_capacidades
 from .rag import BuscadorNormativo
 
 load_dotenv()
@@ -61,6 +61,15 @@ def consultar(consulta: Consulta) -> JSONResponse:
     texto = consulta.texto.strip()
     if not texto:
         raise HTTPException(status_code=400, detail="Escribe tu caso para poder ayudarte.")
+
+    # "En que te especializas?" no es un caso legal: es una pregunta sobre la
+    # herramienta. Se responde antes de buscar nada en el corpus.
+    if es_pregunta_meta(texto):
+        datos = respuesta_capacidades(buscador.normas)
+        datos["aviso_legal"] = AVISO_LEGAL
+        datos["normas_consultadas"] = []
+        db.guardar(texto, datos)
+        return JSONResponse(datos)
 
     resultados = buscador.buscar(texto, cuantas=6)
 
