@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Asesor Laboral de Bolsillo</title>
+<meta name="description" content="Orientacion clara sobre derecho laboral colombiano, con las normas que respaldan cada respuesta." />
+<style>
+  :root{
+    --papel:#ffffff;
+    --lienzo:#f6f7f9;
+    --tinta:#0f172a;
+    --suave:#5b6577;
+    --tenue:#8b94a5;
+    --linea:#e4e7ec;
+    --marca:#4f46e5;
+    --marca-suave:#eef0ff;
+    --acento:#0891b2;
+    --ambar:#b45309;
+    --ambar-suave:#fff8ec;
+    --ok:#047857;
+    --error:#b91c1c;
+    --error-suave:#fef2f2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:ui-sans-serif,system-ui,"Segoe UI",-apple-system,sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Aviso legal: siempre visible ---------- */
+  #aviso{
+    background:var(--ambar-suave); border-bottom:1px solid #f3e3c6;
+    color:#7c4a02; padding:9px 18px; font-size:12.5px; text-align:center;
+    flex:none; line-height:1.5;
+  }
+  #aviso strong{font-weight:650}
+
+  /* ---------- Cabecera ---------- */
+  #cabecera{
+    display:flex; align-items:center; gap:14px; padding:14px 22px;
+    border-bottom:1px solid var(--linea); flex:none; background:var(--papel);
+  }
+  #marca{
+    display:flex; align-items:center; gap:10px;
+  }
+  #punto{
+    width:11px; height:11px; border-radius:50%;
+    background:linear-gradient(135deg,var(--marca),var(--acento));
+    flex:none;
+  }
+  #cabecera h1{font-size:15.5px; margin:0; font-weight:640; letter-spacing:-.2px}
+  #cabecera .sub{font-size:12.5px; color:var(--tenue); margin-left:2px}
+  #estado{
+    margin-left:auto; font-size:12px; color:var(--suave);
+    background:var(--lienzo); border:1px solid var(--linea);
+    padding:5px 12px; border-radius:99px;
+  }
+  #estado b{color:var(--ok); font-weight:650}
+
+  #tablero{display:flex; flex:1; min-height:0}
+
+  /* ---------- Escena: visualizador de voz ---------- */
+  #escena{
+    position:relative; flex:1.05; min-width:0; background:var(--lienzo);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; border-right:1px solid var(--linea);
+  }
+  #lienzo{width:100%; max-width:460px; height:56%; display:block}
+
+  #identidad{text-align:center; margin-top:4px}
+  #identidad b{display:block; font-size:17px; font-weight:640; letter-spacing:-.2px}
+  #identidad span{font-size:12.5px; color:var(--tenue)}
+
+  #subtitulos{
+    margin-top:22px; width:min(92%,520px); min-height:96px;
+    display:flex; align-items:flex-start; justify-content:center;
+  }
+  #subtitulos p{
+    margin:0; padding:15px 20px; background:var(--papel);
+    border:1px solid var(--linea); border-radius:14px;
+    font-size:17px; line-height:1.55; text-align:center;
+    box-shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.05);
+  }
+  #subtitulos.oculto{visibility:hidden}
+
+  /* ---------- Panel de conversacion ---------- */
+  #panel{
+    flex:1; min-width:390px; max-width:580px;
+    display:flex; flex-direction:column; background:var(--papel);
+  }
+  #conversacion{flex:1; overflow-y:auto; padding:22px; scroll-behavior:smooth}
+
+  .vacio h2{font-size:21px; margin:0 0 10px; letter-spacing:-.3px; font-weight:640}
+  .vacio p{color:var(--suave); font-size:14.5px; line-height:1.65; margin:0}
+  .ejemplos{display:flex; flex-direction:column; gap:9px; margin-top:18px}
+  .ejemplo{
+    text-align:left; background:var(--papel); border:1px solid var(--linea);
+    color:var(--tinta); border-radius:11px; padding:13px 15px;
+    font-size:14px; cursor:pointer; font-family:inherit; line-height:1.5;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .ejemplo:hover,.ejemplo:focus-visible{
+    border-color:var(--marca); box-shadow:0 0 0 3px var(--marca-suave); outline:none;
+  }
+
+  .burbuja-usuario{
+    background:var(--marca); color:#fff; font-weight:500;
+    padding:12px 16px; border-radius:16px 16px 5px 16px;
+    margin:0 0 18px auto; max-width:86%; width:fit-content;
+    font-size:14.5px; line-height:1.5;
+  }
+
+  .tarjeta{
+    background:var(--papel); border:1px solid var(--linea);
+    border-radius:14px; padding:18px; margin-bottom:14px;
+    box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  .tarjeta h3{
+    margin:0 0 11px; font-size:11px; text-transform:uppercase;
+    letter-spacing:1.1px; color:var(--marca); font-weight:700;
+  }
+  .tarjeta p{margin:0 0 10px; font-size:15px; line-height:1.68; color:var(--tinta)}
+  .tarjeta p:last-child{margin-bottom:0}
+
+  .norma{border-left:3px solid var(--marca); padding:4px 0 4px 14px; margin-bottom:16px}
+  .norma:last-child{margin-bottom:0}
+  .norma .cita{font-weight:650; font-size:14.5px}
+  .norma .porque{font-size:13.5px; color:var(--suave); margin:5px 0 9px; line-height:1.6}
+  .norma blockquote{
+    margin:0 0 9px; padding:11px 13px; background:var(--lienzo);
+    border:1px solid var(--linea); border-radius:9px;
+    font-size:12.5px; line-height:1.65; color:#3f4a5c;
+  }
+  .norma a{color:var(--acento); font-size:12.5px; text-decoration:none; font-weight:550}
+  .norma a:hover,.norma a:focus-visible{text-decoration:underline}
+
+  ol.pasos{margin:0; padding-left:20px}
+  ol.pasos li{font-size:15px; line-height:1.68; margin-bottom:10px}
+  ol.pasos li:last-child{margin-bottom:0}
+  ol.pasos li::marker{color:var(--marca); font-weight:700}
+
+  .fuera{border-color:#f0dcb8; background:var(--ambar-suave)}
+  .fuera h3{color:var(--ambar)}
+  .fallo{border-color:#f5c2c2; background:var(--error-suave)}
+  .fallo h3{color:var(--error)}
+
+  .confianza{
+    display:inline-block; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.9px; padding:4px 10px; border-radius:99px;
+    background:var(--lienzo); border:1px solid var(--linea);
+    color:var(--suave); margin-top:12px; font-weight:650;
+  }
+  .confianza[data-nivel="alta"]{color:var(--ok); border-color:#b8e6d3; background:#f0fdf7}
+  .confianza[data-nivel="baja"]{color:var(--ambar); border-color:#f0dcb8; background:var(--ambar-suave)}
+
+  .puntos{display:flex; gap:5px; padding:5px 0}
+  .puntos span{
+    width:7px; height:7px; border-radius:50%; background:var(--marca);
+    animation:latir 1.2s infinite ease-in-out;
+  }
+  .puntos span:nth-child(2){animation-delay:.18s}
+  .puntos span:nth-child(3){animation-delay:.36s}
+  @keyframes latir{0%,60%,100%{opacity:.22;transform:translateY(0)}30%{opacity:1;transform:translateY(-5px)}}
+
+  /* ---------- Entrada ---------- */
+  #formulario{
+    border-top:1px solid var(--linea); padding:16px; display:flex;
+    gap:10px; align-items:flex-end; flex:none;
+  }
+  #texto{
+    flex:1; resize:none; background:var(--papel); color:var(--tinta);
+    border:1px solid var(--linea); border-radius:12px;
+    padding:12px 14px; font-family:inherit; font-size:14.5px; line-height:1.55;
+    max-height:150px;
+  }
+  #texto:focus{outline:none; border-color:var(--marca); box-shadow:0 0 0 3px var(--marca-suave)}
+  #texto::placeholder{color:var(--tenue)}
+  #enviar{
+    background:var(--marca); color:#fff; border:0; border-radius:12px;
+    padding:12px 22px; font-weight:600; font-size:14.5px; cursor:pointer;
+    font-family:inherit; white-space:nowrap; transition:filter .15s;
+  }
+  #enviar:hover:not(:disabled){filter:brightness(1.1)}
+  #enviar:focus-visible{outline:2px solid var(--acento); outline-offset:2px}
+  #enviar:disabled{opacity:.42; cursor:not-allowed}
+  #pie{padding:0 16px 14px; font-size:11.5px; color:var(--tenue); flex:none; line-height:1.55}
+
+  @media (max-width:920px){
+    #tablero{flex-direction:column}
+    #escena{flex:none; height:38vh; border-right:0; border-bottom:1px solid var(--linea)}
+    #lienzo{height:52%}
+    #subtitulos{margin-top:12px; min-height:60px}
+    #subtitulos p{font-size:15px; padding:11px 15px}
+    #panel{max-width:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.01ms !important; transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+
+<div id="aviso" role="note">
+  <strong>Aviso:</strong> esta herramienta da orientacion general sobre
+  <strong>derecho laboral colombiano</strong>. No sustituye la asesoria de un abogado.
+  No te pedimos cedula, telefono ni direccion.
+</div>
+
+<header id="cabecera">
+  <div id="marca">
+    <span id="punto" aria-hidden="true"></span>
+    <h1>Asesor Laboral de Bolsillo</h1>
+  </div>
+  <span class="sub">Equipo Mondagascar</span>
+  <div id="estado" role="status" aria-live="polite">Iniciando...</div>
+</header>
+
+<main id="tablero">
+
+  <section id="escena" aria-label="Asesor">
+    <canvas id="lienzo" aria-hidden="true"></canvas>
+    <div id="identidad">
+      <b>Altafulla</b>
+      <span>Asesor en derecho laboral</span>
+    </div>
+    <div id="subtitulos" class="oculto" aria-live="polite" aria-atomic="true"><p></p></div>
+  </section>
+
+  <section id="panel" aria-label="Conversacion">
+    <div id="conversacion">
+      <div class="vacio" id="vacio">
+        <h2>Cuentame que te paso en el trabajo</h2>
+        <p>Escribelo con tus palabras, como se lo contarias a un amigo. Te digo que
+           dice la ley, con los articulos exactos, y que puedes hacer.</p>
+        <div class="ejemplos">
+          <button type="button" class="ejemplo">Me despidieron sin justa causa despues de 3 anos de trabajo. Que me deben pagar?</button>
+          <button type="button" class="ejemplo">Mi jefe me grita frente a todos y me cambio de cargo sin avisarme.</button>
+          <button type="button" class="ejemplo">Renuncie hace dos meses y todavia no me pagan la liquidacion.</button>
+        </div>
+      </div>
+    </div>
+
+    <form id="formulario">
+      <label for="texto" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Describe tu caso laboral</label>
+      <textarea id="texto" rows="2" placeholder="Describe tu situacion..." maxlength="4000"></textarea>
+      <button id="enviar" type="submit">Consultar</button>
+    </form>
+    <div id="pie">Cada respuesta se apoya en un corpus normativo incluido en el repositorio. Si no encuentro una norma que aplique, te lo digo en vez de inventarla.</div>
+  </section>
+
+</main>
+
+<script src="/static/voz.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
