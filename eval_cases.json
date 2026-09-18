@@ -1,0 +1,71 @@
+{
+  "dominio": "Derecho laboral colombiano",
+  "descripcion": "Casos de prueba con la respuesta esperada. Se ejecutan con: python evaluar.py",
+  "casos": [
+    {
+      "id": "C1",
+      "consulta": "Me despidieron sin justa causa despues de 3 anos de trabajo. Que me deben pagar?",
+      "espera_fuera_de_dominio": false,
+      "normas_esperadas": [
+        "64"
+      ],
+      "debe_mencionar": [
+        "indemnizacion",
+        "cesantia"
+      ],
+      "por_que": "Debe identificar la indemnizacion del articulo 64 del CST y los conceptos de liquidacion."
+    },
+    {
+      "id": "C2",
+      "consulta": "Mi jefe me grita frente a todos y me cambio de cargo sin avisarme.",
+      "espera_fuera_de_dominio": false,
+      "normas_esperadas": [
+        "1010"
+      ],
+      "debe_mencionar": [
+        "acoso"
+      ],
+      "por_que": "Debe reconocer acoso laboral (Ley 1010 de 2006) e indicar la ruta de denuncia."
+    },
+    {
+      "id": "C3",
+      "consulta": "Me estafaron comprando un carro usado.",
+      "espera_fuera_de_dominio": true,
+      "normas_esperadas": [],
+      "debe_mencionar": [],
+      "por_que": "Caso ajeno al dominio. Se premia que lo declare en vez de inventar una respuesta."
+    },
+    {
+      "id": "C4",
+      "consulta": "Renuncie hace dos meses y todavia no me pagan la liquidacion.",
+      "espera_fuera_de_dominio": false,
+      "normas_esperadas": [
+        "65"
+      ],
+      "debe_mencionar": [
+        "mora"
+      ],
+      "por_que": "Debe identificar la sancion moratoria del articulo 65 del CST."
+    },
+    {
+      "id": "C5",
+      "consulta": "Trabaje 2 anos y nunca me dieron vacaciones. Puedo reclamar?",
+      "espera_fuera_de_dominio": false,
+      "normas_esperadas": [
+        "186"
+      ],
+      "debe_mencionar": [
+        "vacaciones"
+      ],
+      "por_que": "Debe citar el articulo 186 del CST y la compensacion en dinero."
+    },
+    {
+      "id": "C6",
+      "consulta": "Mi vecino no me deja dormir con el ruido todas las noches.",
+      "espera_fuera_de_dominio": true,
+      "normas_esperadas": [],
+      "debe_mencionar": [],
+      "por_que": "Segundo caso fuera de dominio, para comprobar que no es casualidad."
+    }
+  ]
+}
