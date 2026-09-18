@@ -95,7 +95,7 @@ BIENVENIDA = {
     "saludo": True,
     "area_detectada": "derecho laboral",
     "resumen": (
-        "Soy Altafulla. Te oriento sobre derecho laboral colombiano: despidos, "
+        "Soy Lexian. Te oriento sobre derecho laboral colombiano: despidos, "
         "liquidaciones, acoso en el trabajo, vacaciones, primas y cesantias. "
         "Cuentame que te paso con tus propias palabras, como se lo contarias a un "
         "amigo, y te digo que dice la ley y que puedes hacer."
@@ -108,7 +108,7 @@ BIENVENIDA = {
     ],
     "confianza": "alta",
     "mensaje_hablado": (
-        "Soy Altafulla, tu asesor laboral. Cuentame que te paso en el trabajo "
+        "Soy Lexian, tu asesor laboral. Cuentame que te paso en el trabajo "
         "con tus propias palabras y te digo que dice la ley."
     ),
     "modo": "deterministico",
@@ -169,7 +169,7 @@ def respuesta_sin_conexion(resultados: list[tuple[Norma, float]]) -> dict:
         return dict(FUERA_DE_DOMINIO)
 
     principal = resultados[0][0]
-    relevantes = [n for n, _ in resultados[:3]]
+    relevantes = [n for n, _ in resultados[:4]]
 
     return {
         "fuera_de_dominio": False,
@@ -228,7 +228,10 @@ def _extraer_json(bruto: str) -> dict:
 
 
 def _pedir_a_claude(peticion: str) -> str:
-    cliente = anthropic.Anthropic()
+    # Sin reintentos y con un tope de 25 s: si no hay internet o la llave no
+    # sirve, queremos caer al modo sin conexion de inmediato, no dejar a la
+    # persona mirando un indicador de carga durante medio minuto.
+    cliente = anthropic.Anthropic(timeout=25.0, max_retries=0)
     comunes = dict(
         model=MODELO,
         max_tokens=2000,

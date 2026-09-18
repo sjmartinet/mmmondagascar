@@ -7,7 +7,7 @@ abogado. Escribes lo que te pasó con tus palabras y recibes: qué dice la ley, 
 artículos exactos que te respaldan con su texto a la vista, y los pasos concretos
 que puedes dar.
 
-La respuesta la da **Altafulla**: te habla en voz alta mientras un visualizador
+La respuesta la da **Lexian**: te habla en voz alta mientras un visualizador
 reacciona a su voz y todo queda subtitulado en pantalla. Sin jerga jurídica.
 
 ---
@@ -37,15 +37,15 @@ entidad correcta, en vez de inventarte una norma.
 
 ### Opción A — arranque con un solo comando
 
-**Windows:**
+**Windows** (PowerShell o CMD, dentro de la carpeta del proyecto):
 ```
-start.bat
+.\iniciar.bat
 ```
 
 **Linux / macOS:**
 ```
-chmod +x start.sh
-./start.sh
+chmod +x iniciar.sh
+./iniciar.sh
 ```
 
 Crea el entorno virtual, instala las dependencias y abre la aplicación.
@@ -114,7 +114,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
    app/rag.py     app/llm.py          app/db.py
    BM25 sobre     Claude redacta      SQLite:
    /corpus        SOLO con los        historial que
-   (12 normas)    fragmentos          sobrevive al
+   (19 normas)    fragmentos          sobrevive al
                   recuperados         reinicio
                   (+ modo sin
                    conexion)
@@ -132,7 +132,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
 la aplicación arranque en una máquina limpia. Cada paso de compilación es una
 forma más de fallar. Aquí no hay `npm install`, ni empaquetador, ni build.
 
-**BM25 en lugar de embeddings.** Con 12 documentos la búsqueda léxica es igual de
+**BM25 en lugar de embeddings.** Con 19 documentos la búsqueda léxica es igual de
 precisa, no consume cuota de ninguna API, no descarga modelos y funciona sin
 conexión. Menos piezas, menos cosas que se rompan.
 
@@ -157,7 +157,7 @@ primera.
 
 ## Flujo de uso
 
-1. Al abrir, Altafulla se presenta y el panel derecho propone tres casos de ejemplo.
+1. Al abrir, Lexian se presenta y el panel derecho propone tres casos de ejemplo.
 2. Escribes tu situación en lenguaje natural (o pulsas un ejemplo).
 3. Mientras busca, aparece el estado *"Revisando la normativa"*.
 4. La respuesta llega en tres bloques:
@@ -165,14 +165,14 @@ primera.
    - **Normas que te respaldan** — cada una con su cita, por qué aplica a tu caso,
      el fragmento textual y un enlace a la fuente oficial.
    - **Qué puedes hacer ahora** — pasos accionables.
-5. A la vez, Altafulla lo explica en voz alta con subtítulos sincronizados.
+5. A la vez, Lexian lo explica en voz alta con subtítulos sincronizados.
 6. Si el caso no es laboral, lo dice y te indica a qué entidad acudir.
 
 ---
 
 ## Corpus normativo
 
-12 documentos en `/corpus`, cada uno con su norma, artículo, tema y **enlace a la
+19 documentos en `/corpus`, cada uno con su norma, artículo, tema y **enlace a la
 fuente oficial** (Secretaría del Senado y SUIN-Juriscol):
 
 | Norma | Tema |
@@ -189,6 +189,13 @@ fuente oficial** (Secretaría del Senado y SUIN-Juriscol):
 | Ley 1010 de 2006, art. 2 | Definición y modalidades de acoso laboral |
 | Ley 1010 de 2006, art. 7 | Conductas que constituyen acoso laboral |
 | Ley 1010 de 2006, art. 9 | Cómo y dónde denunciar el acoso |
+| CST art. 239 | Fuero de maternidad: prohibición de despido por embarazo |
+| CST art. 236 | Licencia de maternidad (18 semanas) y de paternidad |
+| CST art. 168 | Recargo nocturno y horas extras (25%, 35%, 75%) |
+| CST art. 179 | Trabajo en domingos y festivos (75%) |
+| Ley 2101 de 2021 | Jornada máxima: 42 horas semanales desde julio de 2026 |
+| Ley 1562 de 2012 | Accidente de trabajo y ARL |
+| CST art. 23 y 24 | Contrato realidad: primacía de la realidad sobre la forma |
 
 ---
 
@@ -228,7 +235,7 @@ asesor-laboral/
 │   ├── rag.py         Índice BM25 sobre el corpus
 │   ├── llm.py         Prompt y llamada al modelo
 │   └── db.py          Historial en SQLite
-├── corpus/            12 normas con su fuente oficial
+├── corpus/            19 normas con su fuente oficial
 ├── static/
 │   ├── index.html     Interfaz
 │   ├── voz.js         Visualizador de voz (canvas 2D)
@@ -239,8 +246,8 @@ asesor-laboral/
 ├── requirements.txt   Dependencias con versiones fijas
 ├── .env.example       Plantilla de variables de entorno
 ├── run.py             Arranque
-├── start.bat          Arranque de un comando (Windows)
-└── start.sh           Arranque de un comando (Linux / macOS)
+├── iniciar.bat          Arranque de un comando (Windows)
+└── iniciar.sh           Arranque de un comando (Linux / macOS)
 ```
 
 ---

@@ -80,8 +80,11 @@
 
   function nombreCorto(v) {
     // "Microsoft Dalia Online (Natural) - Spanish (Mexico)" -> "Dalia"
-    const m = v.name.match(/(?:Microsoft|Google)\s+(\w+)/i);
-    return m ? m[1] : v.name.split(/[\s(-]/)[0];
+    // "Google espanol" -> "espanol"  (con \w se cortaba en la n con tilde)
+    const m = v.name.match(/(?:Microsoft|Google)\s+([\p{L}]+)/u);
+    if (m) return m[1];
+    const primera = v.name.split(/[\s(,-]/).filter(Boolean)[0];
+    return primera || v.name;
   }
 
   function pintarEstado() {
@@ -91,6 +94,47 @@
     else if (vozElegida) voz = ` · voz ${nombreCorto(vozElegida)}`;
     else voz = " · voz del navegador";
     estado.innerHTML = `<b>${normasCargadas}</b> normas cargadas${voz}`;
+  }
+
+  const selVoz = $("#selvoz");
+
+  function poblarSelector(voces) {
+    if (!selVoz) return;
+    const guardada = (() => {
+      try { return localStorage.getItem("lexian.voz"); } catch { return null; }
+    })();
+    selVoz.innerHTML = "";
+    voces.forEach((v, i) => {
+      const op = document.createElement("option");
+      op.value = v.name;
+      // Marcamos cuales son las neurales: son las que suenan a persona.
+      const natural = /natural|online/i.test(v.name) ? "  ★ natural" : "";
+      op.textContent = `${nombreCorto(v)} (${v.lang})${natural}`;
+      selVoz.appendChild(op);
+      if (guardada === v.name) selVoz.selectedIndex = i;
+    });
+    if (guardada && voces.some((v) => v.name === guardada)) {
+      vozElegida = voces.find((v) => v.name === guardada);
+    } else if (vozElegida) {
+      selVoz.value = vozElegida.name;
+    }
+  }
+
+  if (selVoz) {
+    selVoz.addEventListener("change", () => {
+      const voces = speechSynthesis.getVoices();
+      vozElegida = voces.find((v) => v.name === selVoz.value) || vozElegida;
+      try { localStorage.setItem("lexian.voz", selVoz.value); } catch {}
+      pintarEstado();
+      // Se prueba al instante, para no tener que adivinar como suena.
+      speechSynthesis.cancel();
+      const demo = new SpeechSynthesisUtterance("Soy Lexian, tu asesor laboral.");
+      demo.voice = vozElegida;
+      demo.lang = vozElegida ? vozElegida.lang : "es-ES";
+      demo.rate = 1.02;
+      demo.pitch = 0.95;
+      speechSynthesis.speak(demo);
+    });
   }
 
   function elegirVoz() {
@@ -104,7 +148,7 @@
     // Orden de preferencia. Lo primero son las voces NEURALES que Microsoft
     // Edge expone como "Online (Natural)": son gratuitas y suenan a persona,
     // no a sintetizador de los noventa.
-    // Altafulla es un hombre: buscamos voz masculina en espanol, y dentro de
+    // Lexian es un hombre: buscamos voz masculina en espanol, y dentro de
     // esas, primero las neurales de Edge ("Online (Natural)"), que suenan a
     // persona de verdad.
     const MASCULINAS = /gonzalo|alvaro|[aá]lvaro|jorge|pablo|raul|ra[uú]l|dalia_no|liberto|elias|el[ií]as|luciano|male|masculin/i;
@@ -126,10 +170,22 @@
     vozElegida = espanol[0];
   }
 
+  function ordenarYPoblar() {
+    if (!("speechSynthesis" in window)) return;
+    const espanol = speechSynthesis
+      .getVoices()
+      .filter((v) => /^es(-|_|$)/i.test(v.lang))
+      // Las neurales primero: son las que suenan bien.
+      .sort((a, b) => /natural|online/i.test(b.name) - /natural|online/i.test(a.name));
+    if (espanol.length) poblarSelector(espanol);
+  }
+
   elegirVoz();
+  ordenarYPoblar();
   if ("speechSynthesis" in window) {
     speechSynthesis.addEventListener("voiceschanged", () => {
       elegirVoz();
+      ordenarYPoblar();
       pintarEstado();
     });
   }
@@ -273,7 +329,7 @@
     if (d.saludo) {
       return `
         <article class="tarjeta">
-          <h3>Soy Altafulla</h3>
+          <h3>Soy Lexian</h3>
           <p>${escapar(d.resumen)}</p>
           ${
             d.pasos && d.pasos.length

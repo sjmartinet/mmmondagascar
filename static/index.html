@@ -54,8 +54,15 @@
   }
   #cabecera h1{font-size:15.5px; margin:0; font-weight:640; letter-spacing:-.2px}
   #cabecera .sub{font-size:12.5px; color:var(--tenue); margin-left:2px}
-  #estado{
-    margin-left:auto; font-size:12px; color:var(--suave);
+  #selvoz{
+    margin-left:auto; font-family:inherit; font-size:12px; color:var(--suave);
+    background:var(--papel); border:1px solid var(--linea); border-radius:99px;
+    padding:5px 10px; max-width:230px; cursor:pointer;
+  }
+  #selvoz:focus{outline:none; border-color:var(--marca); box-shadow:0 0 0 3px var(--marca-suave)}
+  #selvoz:empty{display:none}
+
+  #estado{ font-size:12px; color:var(--suave);
     background:var(--lienzo); border:1px solid var(--linea);
     padding:5px 12px; border-radius:99px;
   }
@@ -216,6 +223,8 @@
     <h1>Asesor Laboral de Bolsillo</h1>
   </div>
   <span class="sub">Equipo Mondagascar</span>
+  <label for="selvoz" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Voz del asistente</label>
+  <select id="selvoz" title="Voz de Lexian"></select>
   <div id="estado" role="status" aria-live="polite">Iniciando...</div>
 </header>
 
@@ -224,7 +233,7 @@
   <section id="escena" aria-label="Asesor">
     <canvas id="lienzo" aria-hidden="true"></canvas>
     <div id="identidad">
-      <b>Altafulla</b>
+      <b>Lexian</b>
       <span>Asesor en derecho laboral</span>
     </div>
     <div id="subtitulos" class="oculto" aria-live="polite" aria-atomic="true"><p></p></div>

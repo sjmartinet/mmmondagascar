@@ -123,9 +123,31 @@ class BuscadorNormativo:
             )
 
     def buscar(self, consulta: str, cuantas: int = 4) -> list[tuple[Norma, float]]:
-        """Devuelve las normas mas parecidas, de mayor a menor puntaje."""
-        puntajes = self._indice.get_scores(normalizar(consulta))
+        """Devuelve las normas mas parecidas, de mayor a menor puntaje.
+
+        Una norma solo se acepta si la consulta coincide con su TEMA o con sus
+        PALABRAS CLAVE. Sin este filtro, una palabra suelta del cuerpo bastaba
+        para dar un falso positivo: "no me DEJA dormir" enganchaba con "no DEJA
+        de serlo" del articulo 23, y un problema con el vecino acababa
+        respondido con derecho laboral. Los campos curados dicen de que trata la
+        norma; el cuerpo es texto legal lleno de conectores.
+        """
+        terminos = set(normalizar(consulta))
+        if not terminos:
+            return []
+
+        puntajes = self._indice.get_scores(list(terminos))
         mejores = sorted(
             zip(self.normas, puntajes), key=lambda par: par[1], reverse=True
         )
-        return [(n, float(p)) for n, p in mejores[:cuantas] if p > 0]
+
+        aceptadas: list[tuple[Norma, float]] = []
+        for norma, puntaje in mejores:
+            if puntaje <= 0:
+                continue
+            curado = set(normalizar(norma.tema)) | set(normalizar(norma.claves))
+            if terminos & curado:
+                aceptadas.append((norma, float(puntaje)))
+            if len(aceptadas) == cuantas:
+                break
+        return aceptadas
