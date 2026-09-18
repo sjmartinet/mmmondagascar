@@ -1,0 +1,22 @@
+# Variables de entorno con llaves reales
+.env
+
+# Entornos virtuales de Python
+venv/
+.venv/
+env/
+
+# Dependencias instaladas y cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Base de datos local del historial
+data/*.db
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
