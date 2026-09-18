@@ -141,12 +141,19 @@ class BuscadorNormativo:
             zip(self.normas, puntajes), key=lambda par: par[1], reverse=True
         )
 
+        # En consultas largas exigimos DOS coincidencias en los campos curados.
+        # Con una sola bastaba para que "Me despidieron... de trabajo" arrastrara
+        # la ley de accidentes de trabajo, que comparte la palabra "trabajo" y
+        # nada mas. En consultas cortas ("vacaciones") una coincidencia es todo
+        # lo que puede haber, asi que ahi basta con una.
+        minimo = 2 if len(terminos) >= 4 else 1
+
         aceptadas: list[tuple[Norma, float]] = []
         for norma, puntaje in mejores:
             if puntaje <= 0:
                 continue
             curado = set(normalizar(norma.tema)) | set(normalizar(norma.claves))
-            if terminos & curado:
+            if len(terminos & curado) >= minimo:
                 aceptadas.append((norma, float(puntaje)))
             if len(aceptadas) == cuantas:
                 break
