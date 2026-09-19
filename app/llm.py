@@ -102,6 +102,22 @@ META = (
 )
 
 
+# Charla que no es ni un caso legal ni una pregunta sobre la herramienta.
+# Mandar a la Fiscalia a quien pregunta que dia es hoy queda ridiculo.
+CHARLA = (
+    "que dia es hoy", "que hora es", "que fecha es", "que fecha", "como te llamas",
+    "cuantos anos tienes", "cuantos anos", "cuentame un chiste", "que tiempo hace",
+    "hace calor", "hace frio", "como esta el clima", "quien gano", "como vas",
+    "estas ahi", "eres humano", "eres una persona", "eres un robot",
+    "te quiero", "gracias", "muchas gracias", "adios", "chao", "buenas noches",
+)
+
+
+def es_charla(consulta: str) -> bool:
+    texto = " ".join(normalizar(consulta))
+    return any(" ".join(normalizar(c)) in texto for c in CHARLA)
+
+
 def es_pregunta_meta(consulta: str) -> bool:
     texto = " ".join(normalizar(consulta))
     return any(" ".join(normalizar(m)) in texto for m in META)
@@ -276,9 +292,15 @@ def respuesta_sin_conexion(resultados: list[tuple[Norma, float]]) -> dict:
         "area_detectada": "derecho laboral",
         "resumen": (
             f"Segun lo que me cuentas, tu caso se relaciona principalmente con "
-            f"{principal.tema.lower()}. Tambien pueden aplicarte: "
-            + "; ".join(n.tema.lower() for n in relevantes[1:])
-            + ". Te muestro el texto exacto de cada norma para que lo compruebes "
+            f"{principal.tema.lower()}."
+            + (
+                " Tambien pueden aplicarte: "
+                + "; ".join(n.tema.lower() for n in relevantes[1:])
+                + "."
+                if len(relevantes) > 1
+                else ""
+            )
+            + " Te muestro el texto exacto de cada norma para que lo compruebes "
             "tu mismo."
         ),
         "normas": [
@@ -357,7 +379,7 @@ def responder(consulta: str, resultados: list[tuple[Norma, float]]) -> dict:
 
     # Un saludo NO es un caso fuera de dominio: es alguien que acaba de llegar.
     # Confundir las dos cosas hace que la herramienta parezca rota.
-    if limpio in SALUDOS:
+    if limpio in SALUDOS or es_charla(consulta):
         return dict(BIENVENIDA)
 
     # Pedimos mas detalle SOLO cuando de verdad no hay un relato: una o dos

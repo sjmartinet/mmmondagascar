@@ -93,6 +93,31 @@ class BuscadorNormativo:
             )
         self._indice = BM25Okapi([self._tokens(n) for n in self.normas])
 
+        # Campos curados de cada norma y frecuencia documental de cada termino.
+        # Una palabra que aparece en media biblioteca ("dia", "trabajo") no
+        # prueba nada: "que dia es hoy" enganchaba con "dias festivos" y salia
+        # respondido con el recargo dominical. Exigimos al menos un termino
+        # DISCRIMINANTE, o sea poco frecuente en el corpus.
+        self._curado = [
+            set(normalizar(n.tema)) | set(normalizar(n.claves)) for n in self.normas
+        ]
+        self._frecuencia: dict[str, int] = {}
+        for campos in self._curado:
+            for termino in campos:
+                self._frecuencia[termino] = self._frecuencia.get(termino, 0) + 1
+        self._tope_comun = max(2, int(len(self.normas) * 0.4))
+
+    # Palabras que aparecen en el texto legal pero no dicen nada del caso de la
+    # persona: unidades de tiempo y genericos. Coinciden por casualidad
+    # ("que DIA es hoy" con "DIAS festivos"), asi que nunca pueden ser la unica
+    # prueba de que una norma es relevante.
+    DEBILES = {
+        "dia", "dias", "hoy", "ayer", "manana", "ano", "anos", "mes", "meses",
+        "hora", "horas", "semana", "semanas", "tiempo", "fecha", "momento",
+        "trabajo", "trabajar", "laboral", "laborales", "persona", "personas",
+        "cosa", "cosas", "caso", "casos", "vez", "veces", "parte", "partes",
+    }
+
     @staticmethod
     def _tokens(norma: "Norma") -> list[str]:
         """Texto indexable con los campos ponderados.
@@ -148,13 +173,27 @@ class BuscadorNormativo:
         # lo que puede haber, asi que ahi basta con una.
         minimo = 2 if len(terminos) >= 4 else 1
 
+        indice_por_norma = {id(n): i for i, n in enumerate(self.normas)}
+
         aceptadas: list[tuple[Norma, float]] = []
         for norma, puntaje in mejores:
             if puntaje <= 0:
                 continue
-            curado = set(normalizar(norma.tema)) | set(normalizar(norma.claves))
-            if len(terminos & curado) >= minimo:
-                aceptadas.append((norma, float(puntaje)))
+            curado = self._curado[indice_por_norma[id(norma)]]
+            comunes = terminos & curado
+            if len(comunes) < minimo:
+                continue
+            # Al menos una coincidencia tiene que ser poco frecuente Y con
+            # significado propio. Sin las dos condiciones, cualquier consulta con
+            # la palabra "dia" o "trabajo" enganchaba con alguna norma.
+            fuertes = [
+                t for t in comunes
+                if t not in self.DEBILES
+                and self._frecuencia.get(t, 0) <= self._tope_comun
+            ]
+            if not fuertes:
+                continue
+            aceptadas.append((norma, float(puntaje)))
             if len(aceptadas) == cuantas:
                 break
         return aceptadas
