@@ -114,7 +114,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
    app/rag.py     app/llm.py          app/db.py
    BM25 sobre     Claude redacta      SQLite:
    /corpus        SOLO con los        historial que
-   (19 normas)    fragmentos          sobrevive al
+   (29 normas)    fragmentos          sobrevive al
                   recuperados         reinicio
                   (+ modo sin
                    conexion)
@@ -132,7 +132,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
 la aplicación arranque en una máquina limpia. Cada paso de compilación es una
 forma más de fallar. Aquí no hay `npm install`, ni empaquetador, ni build.
 
-**BM25 en lugar de embeddings.** Con 19 documentos la búsqueda léxica es igual de
+**BM25 en lugar de embeddings.** Con 29 documentos la búsqueda léxica es igual de
 precisa, no consume cuota de ninguna API, no descarga modelos y funciona sin
 conexión. Menos piezas, menos cosas que se rompan.
 
@@ -172,7 +172,7 @@ primera.
 
 ## Corpus normativo
 
-19 documentos en `/corpus`, cada uno con su norma, artículo, tema y **enlace a la
+29 documentos en `/corpus`, cada uno con su norma, artículo, tema y **enlace a la
 fuente oficial** (Secretaría del Senado y SUIN-Juriscol):
 
 | Norma | Tema |
@@ -196,6 +196,16 @@ fuente oficial** (Secretaría del Senado y SUIN-Juriscol):
 | Ley 2101 de 2021 | Jornada máxima: 42 horas semanales desde julio de 2026 |
 | Ley 1562 de 2012 | Accidente de trabajo y ARL |
 | CST art. 23 y 24 | Contrato realidad: primacía de la realidad sobre la forma |
+| CST art. 76-80 | Periodo de prueba |
+| CST art. 46 | Contrato a término fijo y su renovación |
+| CST art. 230 | Dotación: calzado y vestido de labor |
+| CST art. 132 | Salario integral y formas de salario |
+| Ley 1280 de 2009 | Licencia por luto (5 días hábiles) |
+| Ley 361 de 1997 | Estabilidad laboral reforzada por salud |
+| Ley 100 de 1993 | Aportes a salud, pensión y riesgos laborales |
+| Ley 1788 de 2016 | Derechos del servicio doméstico |
+| Ley 789 de 2002 | Contrato de aprendizaje (SENA) |
+| Ley 1221 de 2008 | Teletrabajo y derecho a la desconexión |
 
 ---
 
@@ -235,7 +245,7 @@ asesor-laboral/
 │   ├── rag.py         Índice BM25 sobre el corpus
 │   ├── llm.py         Prompt y llamada al modelo
 │   └── db.py          Historial en SQLite
-├── corpus/            19 normas con su fuente oficial
+├── corpus/            29 normas con su fuente oficial
 ├── static/
 │   ├── index.html     Interfaz
 │   ├── voz.js         Visualizador de voz (canvas 2D)
