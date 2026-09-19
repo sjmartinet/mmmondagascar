@@ -217,11 +217,40 @@ VOCABULARIO_LABORAL = {
     "cesantias", "vacaciones", "prima", "incapacidad", "arl", "eps",
     "cotizar", "cotizacion", "aportes", "companeros", "supervisor", "gerente",
     "contratista", "honorarios", "practicante", "aprendiz", "obrero",
+    # Terminos que aparecen en consultas laborales aunque no nombren "trabajo":
+    "licencia", "licencias", "certificado", "incapacidad", "incapacitado",
+    "dotacion", "primas", "domingo", "domingos", "festivo", "festivos",
+    "extras", "suplementario", "recargo", "subsidio", "auxilio", "embarazo",
+    "embarazada", "maternidad", "paternidad", "lactancia", "indemnizacion",
+    "reintegro", "acoso", "renuncio", "despedido", "despedida", "cesantia",
+    "vacacion", "descanso", "salarial", "empleadora", "patronal",
 }
 
 
+# Senales inequivocas de OTRA area del derecho. Mandan sobre el vocabulario
+# laboral: "me robaron en el trabajo" lleva la palabra "trabajo", pero un robo es
+# un delito y remitir a esa persona al Ministerio de Trabajo es mandarla al sitio
+# equivocado. Donde hay delito, la puerta es la Fiscalia.
+OTRAS_AREAS = {
+    "robaron", "robo", "robar", "robaste", "hurto", "hurtaron", "ladron",
+    "estafa", "estafaron", "estafador", "delito", "penal", "fiscalia",
+    "divorcio", "divorciar", "divorciarme", "custodia", "alimentos",
+    "arriendo", "arrendador", "arrendatario", "inquilino", "deposito",
+    "vecino", "vecinos", "choque", "chocaron", "transito", "comparendo",
+    "herencia", "sucesion", "notaria", "escritura", "predial",
+    "negligencia",
+}
+
+
+def hay_senal_de_otra_area(consulta: str) -> bool:
+    return bool(set(normalizar(consulta)) & OTRAS_AREAS)
+
+
 def es_tema_laboral(consulta: str) -> bool:
-    return bool(set(normalizar(consulta)) & VOCABULARIO_LABORAL)
+    terminos = set(normalizar(consulta))
+    if terminos & OTRAS_AREAS:
+        return False
+    return bool(terminos & VOCABULARIO_LABORAL)
 
 
 FUERA_DEL_CORPUS = {
@@ -239,6 +268,8 @@ FUERA_DEL_CORPUS = {
         "cita en www.mintrabajo.gov.co o en la Inspeccion de Trabajo de tu ciudad.",
         "Los consultorios juridicos de las universidades atienden casos laborales "
         "sin costo.",
+        "Si ademas ocurrio un delito (un robo, una agresion), denuncialo aparte "
+        "ante la Fiscalia: son dos tramites distintos.",
         "Si quieres, reformula tu consulta: manejo despidos y liquidaciones, acoso "
         "laboral, vacaciones, primas y cesantias, horas extras y jornada, embarazo "
         "y licencias, accidentes de trabajo, contratos y periodo de prueba.",
@@ -264,8 +295,8 @@ FUERA_DE_DOMINIO = {
     "pasos": [
         "Si es un problema de compras, garantias o estafas de consumo: acude a la "
         "Superintendencia de Industria y Comercio (SIC).",
-        "Si crees que hubo un delito: presenta la denuncia ante la Fiscalia General "
-        "de la Nacion.",
+        "Si te robaron, te agredieron o crees que hubo un delito: denuncialo ante "
+        "la Fiscalia General de la Nacion o en la estacion de policia mas cercana.",
         "Para otros temas civiles o de familia: busca el consultorio juridico "
         "gratuito de una universidad cercana o la Defensoria del Pueblo.",
     ],
@@ -381,6 +412,13 @@ def responder(consulta: str, resultados: list[tuple[Norma, float]]) -> dict:
     # Confundir las dos cosas hace que la herramienta parezca rota.
     if limpio in SALUDOS or es_charla(consulta):
         return dict(BIENVENIDA)
+
+    # Un robo, una estafa o un divorcio no son asuntos laborales aunque ocurran
+    # en el trabajo. Esto se decide ANTES de mirar el corpus, porque si no la
+    # busqueda encuentra coincidencias casuales ("empresa", "jefe") y acaba
+    # citando una norma laboral para un delito.
+    if hay_senal_de_otra_area(consulta):
+        return dict(FUERA_DE_DOMINIO)
 
     # Pedimos mas detalle SOLO cuando de verdad no hay un relato: una o dos
     # palabras sueltas, o texto sin ningun termino reconocible ("asdasd").
