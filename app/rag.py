@@ -116,6 +116,7 @@ class BuscadorNormativo:
         "hora", "horas", "semana", "semanas", "tiempo", "fecha", "momento",
         "trabajo", "trabajar", "laboral", "laborales", "persona", "personas",
         "cosa", "cosas", "caso", "casos", "vez", "veces", "parte", "partes",
+        "casa", "casas", "hogar", "lugar", "sitio", "empresa", "empresas",
     }
 
     @staticmethod

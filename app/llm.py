@@ -238,7 +238,10 @@ OTRAS_AREAS = {
     "arriendo", "arrendador", "arrendatario", "inquilino", "deposito",
     "vecino", "vecinos", "choque", "chocaron", "transito", "comparendo",
     "herencia", "sucesion", "notaria", "escritura", "predial",
-    "negligencia",
+    "negligencia", "cirugia", "medicamento", "medicamentos", "autorizacion",
+    "hipoteca", "embargo", "deuda", "deudas", "banco", "credito",
+    "colegio", "universidad", "matricula", "cupo", "aerolinea", "vuelo",
+    "perro", "mascota", "denuncia_penal",
 }
 
 
