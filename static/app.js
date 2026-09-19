@@ -29,10 +29,10 @@
     .then((d) => {
       normasCargadas = d.normas_indexadas;
       fishAnunciado = d.voz_disponible;
+      // Sin llave de IA la aplicacion NO esta rota: responde desde el corpus.
+      // Anunciarlo como un error asustaba a quien la abria por primera vez.
+      conIA = d.llave_claude;
       pintarEstado();
-      if (!d.llave_claude) {
-        estado.innerHTML = '<b style="color:var(--alerta)">Falta ANTHROPIC_API_KEY en .env</b>';
-      }
     })
     .catch(() => (estado.textContent = "Sin conexion con el servidor"));
 
@@ -76,6 +76,7 @@
   let vozElegida = null;
   let normasCargadas = 0;
   let fishAnunciado = false;
+  let conIA = false;
   let fishComprobado = false; // solo decimos "Fish Audio" cuando ha devuelto audio
 
   function nombreCorto(v) {
@@ -93,7 +94,8 @@
     else if (fishComprobado) voz = " · voz Fish Audio";
     else if (vozElegida) voz = ` · voz ${nombreCorto(vozElegida)}`;
     else voz = " · voz del navegador";
-    estado.innerHTML = `<b>${normasCargadas}</b> normas cargadas${voz}`;
+    const motor = conIA ? "" : " · modo corpus";
+    estado.innerHTML = `<b>${normasCargadas}</b> normas cargadas${motor}${voz}`;
   }
 
   const selVoz = $("#selvoz");
