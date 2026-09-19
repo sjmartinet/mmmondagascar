@@ -21,6 +21,7 @@ import os
 import re
 
 import anthropic
+import httpx
 
 from .rag import Norma, normalizar
 
@@ -383,6 +384,39 @@ def _extraer_json(bruto: str) -> dict:
     return json.loads(texto[inicio : fin + 1])
 
 
+def _pedir_a_gemini(peticion: str) -> str:
+    """Google AI Studio por HTTP directo.
+
+    Se llama con httpx, que ya es dependencia, en lugar de anadir el SDK de
+    Google: una dependencia menos que instalar en la maquina de quien evalue.
+    """
+    llave = os.getenv("GEMINI_API_KEY", "").strip()
+    modelo = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    respuesta = httpx.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent",
+        params={"key": llave},
+        json={
+            "system_instruction": {"parts": [{"text": INSTRUCCION}]},
+            "contents": [{"role": "user", "parts": [{"text": peticion}]}],
+            "generationConfig": {
+                "temperature": 0.2,
+                "maxOutputTokens": 3000,
+                "responseMimeType": "application/json",
+                # Gemini 2.5 Flash razona antes de responder y se gastaba el
+                # presupuesto de tokens pensando, devolviendo texto vacio.
+                # Con el razonamiento apagado responde en la mitad de tiempo y
+                # la calidad para esta tarea es la misma: el trabajo dificil
+                # (encontrar las normas) ya lo hizo la busqueda.
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
+        },
+        timeout=25.0,
+    )
+    respuesta.raise_for_status()
+    partes = respuesta.json()["candidates"][0]["content"]["parts"]
+    return "".join(p.get("text", "") for p in partes)
+
+
 def _pedir_a_claude(peticion: str) -> str:
     # Sin reintentos y con un tope de 25 s: si no hay internet o la llave no
     # sirve, queremos caer al modo sin conexion de inmediato, no dejar a la
@@ -444,11 +478,22 @@ def responder(consulta: str, resultados: list[tuple[Norma, float]]) -> dict:
         f"FRAGMENTOS DEL CORPUS NORMATIVO:\n{_contexto(resultados)}"
     )
 
-    try:
-        datos = _extraer_json(_pedir_a_claude(peticion))
-    except Exception as error:  # noqa: BLE001
-        # Sin internet, sin llave o con la API caida seguimos respondiendo.
-        print(f"[llm] usando el modo sin conexion: {type(error).__name__}: {error}")
+    # Proveedores en orden. El primero que responda manda; si ninguno lo hace,
+    # el corpus responde igual. Ninguna llave es obligatoria.
+    proveedores = []
+    if os.getenv("ANTHROPIC_API_KEY", "").strip():
+        proveedores.append(("Claude", _pedir_a_claude))
+    if os.getenv("GEMINI_API_KEY", "").strip():
+        proveedores.append(("Gemini", _pedir_a_gemini))
+
+    for nombre, pedir in proveedores:
+        try:
+            datos = _extraer_json(pedir(peticion))
+            break
+        except Exception as error:  # noqa: BLE001
+            print(f"[llm] {nombre} no respondio: {type(error).__name__}: {error}")
+    else:
+        # Sin llaves, sin internet o con las APIs caidas: respondemos igual.
         return respuesta_sin_conexion(resultados)
 
     # Blindaje: aunque el modelo se desvie del formato, la interfaz no se rompe.

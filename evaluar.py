@@ -21,6 +21,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.llm import responder  # noqa: E402
+from app.rag import normalizar  # noqa: E402
 from app.rag import BuscadorNormativo  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent
@@ -56,13 +57,18 @@ def main() -> int:
             )
 
         citas = " ".join(n.get("cita", "") for n in datos.get("normas", []))
+        # Comparamos sin tildes: el modelo escribe "indemnizacion" con tilde y el
+        # modo sin conexion sin ella. La diferencia es ortografica, no de fondo.
+        citas_planas = " ".join(normalizar(citas))
         for esperada in caso["normas_esperadas"]:
-            if esperada not in citas:
+            if esperada not in citas_planas and esperada not in citas:
                 fallos.append(f"no cito la norma {esperada}")
 
-        texto = (datos.get("resumen", "") + " " + " ".join(datos.get("pasos", []))).lower()
+        texto = " ".join(
+            normalizar(datos.get("resumen", "") + " " + " ".join(datos.get("pasos", [])))
+        )
         for palabra in caso["debe_mencionar"]:
-            if palabra not in texto and palabra not in citas.lower():
+            if palabra not in texto and palabra not in citas_planas:
                 fallos.append(f"no menciono '{palabra}'")
 
         if fallos:

@@ -49,7 +49,10 @@ def salud() -> dict:
         "estado": "ok",
         "dominio": DOMINIO,
         "normas_indexadas": len(buscador.normas),
-        "llave_claude": bool(os.getenv("ANTHROPIC_API_KEY", "").strip()),
+        "llave_claude": bool(
+            os.getenv("ANTHROPIC_API_KEY", "").strip()
+            or os.getenv("GEMINI_API_KEY", "").strip()
+        ),
         "voz_disponible": bool(os.getenv("FISH_API_KEY", "").strip()),
         "modo_sin_conexion": "disponible",
         "aviso_legal": AVISO_LEGAL,

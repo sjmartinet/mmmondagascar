@@ -93,6 +93,8 @@ La aplicación queda en **http://127.0.0.1:8000** y se abre sola en el navegador
 |---|---|---|
 | `ANTHROPIC_API_KEY` | No | Con ella las respuestas las redacta Claude y suenan naturales. **Sin ella la aplicación sigue funcionando**: responde directamente desde el corpus, citando los mismos artículos. Se obtiene en **https://console.anthropic.com** → *API Keys*. |
 | `CLAUDE_MODEL` | No | Por defecto `claude-opus-5`. |
+| `GEMINI_API_KEY` | No | Alternativa gratuita, **recomendada**. Se obtiene en **https://aistudio.google.com/apikey** sin tarjeta. |
+| `GEMINI_MODEL` | No | Por defecto `gemini-2.5-flash`. |
 | `FISH_API_KEY` | No | Voz de alta calidad. Sin ella se usa la voz del navegador, que es gratuita y funciona sin internet. Se obtiene en **https://fish.audio** → *API Keys*. |
 | `FISH_VOICE_ID` | No | Identificador de la voz elegida en Fish Audio. |
 
@@ -121,7 +123,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
         ┌──────────────┼──────────────────┐
         ▼              ▼                  ▼
    app/rag.py     app/llm.py          app/db.py
-   BM25 sobre     Claude redacta      SQLite:
+   BM25 sobre     Claude o Gemini     SQLite:
    /corpus        SOLO con los        historial que
    (33 normas)    fragmentos          sobrevive al
                   recuperados         reinicio
