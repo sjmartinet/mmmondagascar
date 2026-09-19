@@ -76,6 +76,15 @@ python run.py
 
 La aplicación queda en **http://127.0.0.1:8000** y se abre sola en el navegador.
 
+### Si algo falla al arrancar
+
+| Mensaje | Qué hacer |
+|---|---|
+| `python no se reconoce como un comando` | Instala Python desde python.org y marca **"Add python.exe to PATH"**. Cierra la terminal y abre una nueva. |
+| Se abre la Microsoft Store al escribir `python` | Windows > Configuración > Aplicaciones > Alias de ejecución > desactiva `python.exe` y `python3.exe`. |
+| `.\iniciar.bat` no hace nada o se cierra | Ábrelo desde una terminal (`cd` a la carpeta y `.\iniciar.bat`), no con doble clic, para ver el mensaje. |
+| Cualquier otro error | Usa el arranque paso a paso de la Opción B: funciona siempre. |
+
 ---
 
 ## Variables de entorno
@@ -114,7 +123,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
    app/rag.py     app/llm.py          app/db.py
    BM25 sobre     Claude redacta      SQLite:
    /corpus        SOLO con los        historial que
-   (29 normas)    fragmentos          sobrevive al
+   (33 normas)    fragmentos          sobrevive al
                   recuperados         reinicio
                   (+ modo sin
                    conexion)
@@ -132,7 +141,7 @@ Las llaves reales **nunca** están en el repositorio: `.env` está en `.gitignor
 la aplicación arranque en una máquina limpia. Cada paso de compilación es una
 forma más de fallar. Aquí no hay `npm install`, ni empaquetador, ni build.
 
-**BM25 en lugar de embeddings.** Con 29 documentos la búsqueda léxica es igual de
+**BM25 en lugar de embeddings.** Con 33 documentos la búsqueda léxica es igual de
 precisa, no consume cuota de ninguna API, no descarga modelos y funciona sin
 conexión. Menos piezas, menos cosas que se rompan.
 
@@ -172,7 +181,7 @@ primera.
 
 ## Corpus normativo
 
-29 documentos en `/corpus`, cada uno con su norma, artículo, tema y **enlace a la
+33 documentos en `/corpus`, cada uno con su norma, artículo, tema y **enlace a la
 fuente oficial** (Secretaría del Senado y SUIN-Juriscol):
 
 | Norma | Tema |
@@ -206,6 +215,10 @@ fuente oficial** (Secretaría del Senado y SUIN-Juriscol):
 | Ley 1788 de 2016 | Derechos del servicio doméstico |
 | Ley 789 de 2002 | Contrato de aprendizaje (SENA) |
 | Ley 1221 de 2008 | Teletrabajo y derecho a la desconexión |
+| CST art. 353 y 405 | Asociación sindical y fuero sindical |
+| CST art. 429 | Derecho de huelga |
+| Ley 797 de 2003 | Requisitos de la pensión de vejez |
+| Ley 50 de 1990, art. 67 | Despido colectivo y cierre de empresa |
 
 ---
 
@@ -245,7 +258,7 @@ asesor-laboral/
 │   ├── rag.py         Índice BM25 sobre el corpus
 │   ├── llm.py         Prompt y llamada al modelo
 │   └── db.py          Historial en SQLite
-├── corpus/            29 normas con su fuente oficial
+├── corpus/            33 normas con su fuente oficial
 ├── static/
 │   ├── index.html     Interfaz
 │   ├── voz.js         Visualizador de voz (canvas 2D)

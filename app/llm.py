@@ -188,6 +188,54 @@ DEMASIADO_CORTO = {
     "modo": "deterministico",
 }
 
+# Vocabulario que delata que la consulta SI es laboral, aunque el corpus no la
+# cubra. Sin esto, preguntar por un sindicato recibia la respuesta de "acude a la
+# Superintendencia de Industria y Comercio", que es un consejo equivocado.
+VOCABULARIO_LABORAL = {
+    "trabajo", "trabajar", "trabajador", "trabajadora", "trabajando", "laboral",
+    "empleo", "empleado", "empleada", "empleador", "jefe", "patron", "empresa",
+    "contrato", "contratado", "contratar", "salario", "sueldo", "nomina",
+    "prestaciones", "liquidacion", "despido", "despidieron", "despedir",
+    "renuncia", "renunciar", "renuncie", "oficina", "turno", "jornada",
+    "horario", "sindicato", "huelga", "pension", "pensionar", "jubilacion",
+    "cesantias", "vacaciones", "prima", "incapacidad", "arl", "eps",
+    "cotizar", "cotizacion", "aportes", "companeros", "supervisor", "gerente",
+    "contratista", "honorarios", "practicante", "aprendiz", "obrero",
+}
+
+
+def es_tema_laboral(consulta: str) -> bool:
+    return bool(set(normalizar(consulta)) & VOCABULARIO_LABORAL)
+
+
+FUERA_DEL_CORPUS = {
+    "fuera_de_dominio": False,
+    "saludo": True,
+    "area_detectada": "derecho laboral, pero fuera de mi corpus",
+    "resumen": (
+        "Tu caso SI es de derecho laboral, pero no esta entre las normas que tengo "
+        "cargadas, asi que no puedo citarte el articulo exacto. Prefiero decirtelo "
+        "antes que darte una respuesta que podria estar equivocada."
+    ),
+    "normas": [],
+    "pasos": [
+        "Acude al Ministerio de Trabajo: la orientacion es gratuita y puedes pedir "
+        "cita en www.mintrabajo.gov.co o en la Inspeccion de Trabajo de tu ciudad.",
+        "Los consultorios juridicos de las universidades atienden casos laborales "
+        "sin costo.",
+        "Si quieres, reformula tu consulta: manejo despidos y liquidaciones, acoso "
+        "laboral, vacaciones, primas y cesantias, horas extras y jornada, embarazo "
+        "y licencias, accidentes de trabajo, contratos y periodo de prueba.",
+    ],
+    "confianza": "baja",
+    "mensaje_hablado": (
+        "Tu caso si es laboral, pero no esta entre las normas que tengo cargadas. "
+        "Prefiero decirtelo antes que equivocarme. Te recomiendo acudir al "
+        "Ministerio de Trabajo, donde la orientacion es gratuita."
+    ),
+    "modo": "deterministico",
+}
+
 FUERA_DE_DOMINIO = {
     "fuera_de_dominio": True,
     "area_detectada": "fuera del derecho laboral",
@@ -218,7 +266,7 @@ FUERA_DE_DOMINIO = {
 def respuesta_sin_conexion(resultados: list[tuple[Norma, float]]) -> dict:
     """Arma la respuesta solo con el corpus, sin llamar a ningun modelo."""
     if not resultados:
-        return dict(FUERA_DE_DOMINIO)
+        return dict(FUERA_DE_DOMINIO)  # el enrutado ya ocurrio en responder()
 
     principal = resultados[0][0]
     relevantes = [n for n, _ in resultados[:4]]
@@ -323,7 +371,10 @@ def responder(consulta: str, resultados: list[tuple[Norma, float]]) -> dict:
     # Ya con contenido suficiente: si el corpus no devuelve nada, el caso esta
     # fuera de dominio, y eso lo sabemos con certeza sin llamar al modelo.
     if not resultados:
-        return dict(FUERA_DE_DOMINIO)
+        # Distinguir "esto no es laboral" de "es laboral pero no lo tengo" importa:
+        # mandar a alguien con un problema sindical a la Superintendencia de
+        # Industria y Comercio es darle un consejo equivocado.
+        return dict(FUERA_DEL_CORPUS if es_tema_laboral(consulta) else FUERA_DE_DOMINIO)
 
     peticion = (
         f"CONSULTA DE LA PERSONA:\n{consulta}\n\n"
